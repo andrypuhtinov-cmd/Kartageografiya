@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Центры машиностроения России — контурная карта</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fff;--fg:#1c1c1a;--muted:#5d5d58;--card:#f3f1ea;--line:#c9c5b8;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181a;--fg:#ececea;--muted:#a3a39d;--card:#232427;--line:#4a4940;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17181a;--fg:#ececea;--muted:#a3a39d;--card:#232427;--line:#4a4940;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:12px}
+h1{font-size:1.25rem;margin:.2em 0}h2{font-size:1.05rem;margin:1.2em 0 .4em}
+p.s{color:var(--muted);margin:.2em 0 .8em;font-size:.9rem}
+#map{width:100%;height:78vh;min-height:420px;border:1px solid var(--line);border-radius:8px;background:#dcebf5;touch-action:none}
+#err{color:#b0171f;font-size:.9rem;white-space:pre-wrap}
+.btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
+.btns button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:16px;padding:6px 12px;font:inherit;font-size:.85rem}
+.concl{background:var(--card);border-radius:8px;padding:4px 14px 10px}.concl li{margin:.4em 0}
+</style>
+</head>
+<body>
+<h1>Важнейшие центры машиностроения России</h1>
+<p class="s">Одна карта с приближением: двигайте пальцем, масштабируйте щипком или колесом мыши. Отрасли включаются и отключаются в легенде внизу карты. Город с несколькими отраслями показан вложенными кружками разных цветов. Нажмите на город, чтобы увидеть его отрасли. Граница России показана красной линией (данные карты мира Natural Earth из библиотеки Apache ECharts).</p>
+<div class="btns"><button id="b1">Вся Россия</button><button id="b2">Центр и Поволжье</button><button id="b3">Москва и область</button></div>
+<div id="err"></div>
+<div id="map"></div>
+
+<h2>Вывод о размещении машиностроения России</h2>
+<div class="concl"><ul>
+<li><b>Главная зона</b>: Центральная Россия, Волго-Вятский район и Поволжье (Москва, Нижний Новгород, Тольятти, Ульяновск, Набережные Челны). Здесь есть квалифицированные кадры, наука, развитая транспортная сеть и крупный рынок сбыта, поэтому сосредоточены легковые и грузовые автомобили, автобусы, станки и локомотивы.</li>
+<li><b>Урал</b> (Челябинск, Миасс, Нижний Тагил, Златоуст) специализируется на металлоёмком машиностроении: тракторы, грузовики, вагоны, станки. Размещение опирается на местную металлургическую базу.</li>
+<li><b>Северо-Запад</b> (Санкт-Петербург, Калининград, Мурманск, Архангельск) — судостроение и вагоны метро. Центры связаны с морскими портами и наукоёмкими производствами.</li>
+<li><b>Судостроение</b> тяготеет к морским побережьям (Санкт-Петербург, Мурманск, Архангельск, Владивосток, Хабаровск) и к крупным рекам (Нижний Новгород, Красноярск, Тюмень, Астрахань).</li>
+<li><b>Сельскохозяйственное машиностроение</b> (комбайны, тракторы) расположено в зерновых районах или рядом с ними: Ростов-на-Дону, Таганрог, Волгоград, Омск, Красноярск, Рубцовск. Это пример ориентации на потребителя.</li>
+<li><b>Сибирь и Дальний Восток</b> — редкие крупные центры вдоль Транссиба (Новосибирск, Омск, Красноярск, Чита, Хабаровск, Владивосток): вагоностроение, станкостроение, комбайны, судостроение.</li>
+<li><b>Общий вывод:</b> машиностроение размещено неравномерно, в основном западнее Урала, в главной полосе расселения. Определяющие факторы — потребитель, трудовые ресурсы, наука, транспорт, а для металлоёмких отраслей ещё и металлургическая база. Города с несколькими отраслями (Москва, Нижний Новгород, Ульяновск, Ростов-на-Дону, Челябинск) образуют машиностроительные узлы.</li>
+</ul></div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
+<script>
+var errEl=document.getElementById('err');
+window.onerror=function(m,u,l){errEl.textContent+='Ошибка: '+m+' (строка '+l+')\n'};
+var C={"Елабуга":[55.76,52.06],"Ижевск":[56.85,53.20],"Калининград":[54.71,20.51],"Москва":[55.76,37.62],"Нижний Новгород":[56.33,44.00],"Ростов-на-Дону":[47.23,39.72],"Серпухов":[54.92,37.41],"Таганрог":[47.21,38.94],"Тольятти":[53.51,49.42],"Ульяновск":[54.32,48.40],"Миасс":[55.05,60.11],"Набережные Челны":[55.74,52.41],"Курган":[55.44,65.34],"Ликино-Дулёво":[55.70,38.96],"Павлово":[55.97,43.10],"Уфа":[54.74,55.97],"Энгельс":[51.48,46.12],"Коломна":[55.08,38.78],"Людиново":[53.87,34.44],"Муром":[55.58,42.05],"Новочеркасск":[47.42,40.09],"Абакан":[53.72,91.43],"Брянск":[53.25,34.37],"Тверь":[56.86,35.90],"Калуга":[54.51,36.26],"Нижний Тагил":[57.91,59.97],"Новоалтайск":[53.39,83.94],"Чита":[52.03,113.50],"Мытищи":[55.91,37.73],"Санкт-Петербург":[59.93,30.34],"Архангельск":[64.54,40.54],"Астрахань":[46.35,48.04],"Благовещенск":[50.27,127.53],"Великий Устюг":[60.76,46.30],"Владивосток":[43.12,131.89],"Зеленодольск":[55.84,48.52],"Красноярск":[56.01,92.85],"Мурманск":[68.97,33.08],"Новодвинск":[64.41,40.82],"Сыктывкар":[61.67,50.82],"Тюмень":[57.15,65.53],"Усть-Кут":[56.79,105.77],"Хабаровск":[48.48,135.08],"Вологда":[59.22,39.89],"Воронеж":[51.67,39.18],"Иваново":[57.00,40.97],"Златоуст":[55.17,59.67],"Киров":[58.60,49.66],"Новосибирск":[55.03,82.92],"Оренбург":[51.77,55.10],"Рязань":[54.63,39.74],"Самара":[53.20,50.15],"Челябинск":[55.16,61.40],"Владимир":[56.13,40.41],"Волгоград":[48.71,44.51],"Липецк":[52.61,39.60],"Петрозаводск":[61.79,34.36],"Рубцовск":[51.52,81.21],"Чебоксары":[56.13,47.25],"Бежецк":[57.79,36.69],"Биробиджан":[48.79,132.92],"Люберцы":[55.68,37.89],"Омск":[54.99,73.37]};
+var S=[
+["Легковые автомобили","#e6194b",["Елабуга","Ижевск","Калининград","Москва","Нижний Новгород","Ростов-на-Дону","Серпухов","Таганрог","Тольятти","Ульяновск"]],
+["Грузовые автомобили","#3a6fd8",["Миасс","Москва","Набережные Челны","Нижний Новгород"]],
+["Автобусы","#f58231",["Курган","Ликино-Дулёво","Нижний Новгород","Павлово","Ульяновск"]],
+["Троллейбусы","#911eb4",["Уфа","Энгельс"]],
+["Локомотивы","#1a9b3c",["Коломна","Людиново","Муром","Новочеркасск"]],
+["Вагоны","#9a6324",["Абакан","Брянск","Тверь","Калуга","Нижний Тагил","Новоалтайск","Чита"]],
+["Вагоны метро","#f032e6",["Мытищи","Санкт-Петербург"]],
+["Судостроение и судоремонт","#00a6c8",["Архангельск","Астрахань","Благовещенск","Великий Устюг","Владивосток","Зеленодольск","Калининград","Красноярск","Москва","Мурманск","Нижний Новгород","Новодвинск","Санкт-Петербург","Сыктывкар","Тюмень","Усть-Кут","Хабаровск"]],
+["Станкостроение","#808000",["Вологда","Воронеж","Иваново","Златоуст","Киров","Коломна","Москва","Новосибирск","Оренбург","Рязань","Самара","Ульяновск","Челябинск"]],
+["Тракторы","#444444",["Владимир","Волгоград","Липецк","Петрозаводск","Рубцовск","Чебоксары","Челябинск"]],
+["Комбайны","#e8a800",["Бежецк","Биробиджан","Красноярск","Люберцы","Омск","Ростов-на-Дону","Рязань","Таганрог"]]
+];
+var POS=['right','left','top','bottom','right','left'];
+var sel={};S.forEach(function(s){sel[s[0]]=true});
+function citySectors(n){var a=[];S.forEach(function(s){if(sel[s[0]]&&s[2].indexOf(n)>=0)a.push(s[0])});return a}
+function allSectors(n){return S.filter(function(s){return s[2].indexOf(n)>=0}).map(function(s){return s[0]})}
+var names=Object.keys(C),idx={};names.forEach(function(n,i){idx[n]=i});
+function labelData(){var d=[];names.forEach(function(n){if(!citySectors(n).length)return;
+d.push({name:n,value:[C[n][1],C[n][0]],label:{position:POS[idx[n]%POS.length]}})});return d}
+function build(){
+var series=S.map(function(s,k){
+ var size=15-k*0+0;
+ return {name:s[0],type:'scatter',coordinateSystem:'geo',zlevel:2+(10-k)*0.01,symbolSize:0,
+  data:s[2].map(function(n){var m=0;for(var j=0;j<k;j++)if(S[j][2].indexOf(n)>=0)m++;
+   var tot=0;S.forEach(function(q){if(q[2].indexOf(n)>=0)tot++});
+   return {name:n,value:[C[n][1],C[n][0]],symbolSize:Math.max(7,15-m*4),itemStyle:{color:s[1],borderColor:'#222',borderWidth:0.8}}}),
+  itemStyle:{color:s[1]}}});
+series.forEach(function(s,k){s.data.forEach(function(d){d.symbolSize=d.symbolSize})});
+series.push({name:'Подписи',type:'scatter',coordinateSystem:'geo',zlevel:5,symbolSize:1,silent:true,
+ itemStyle:{color:'rgba(0,0,0,0)'},label:{show:true,formatter:'{b}',fontSize:11,fontWeight:'bold',color:'#111',textBorderColor:'#fff',textBorderWidth:3,distance:9},data:labelData()});
+return series}
+var chart=echarts.init(document.getElementById('map'));
+var V={all:{center:[98,62],zoom:2.1},mid:{center:[48,55],zoom:9},msk:{center:[39.5,55.8],zoom:34}};
+chart.setOption({
+ backgroundColor:'#dcebf5',
+ tooltip:{trigger:'item',confine:true,formatter:function(p){return p.seriesName=='Подписи'?'':'<b>'+p.name+'</b><br>'+allSectors(p.name).join('<br>')}},
+ legend:{type:'scroll',bottom:2,data:S.map(function(s){return {name:s[0],icon:'circle'}}),selected:sel,textStyle:{fontSize:11},itemWidth:12,itemHeight:12,pageIconSize:10},
+ geo:{map:'world',roam:true,center:V.all.center,zoom:V.all.zoom,scaleLimit:{min:1,max:80},aspectScale:1,
+  itemStyle:{areaColor:'#ecebe5',borderColor:'#b8b8b0',borderWidth:0.5},
+  emphasis:{itemStyle:{areaColor:'#ecebe5'},label:{show:false}},
+  regions:[{name:'Russia',itemStyle:{areaColor:'#fbf8ee',borderColor:'#c0161f',borderWidth:1.6},emphasis:{itemStyle:{areaColor:'#fbf8ee'}}}]},
+ series:build()
+});
+chart.on('legendselectchanged',function(e){sel=e.selected;chart.setOption({series:[{name:'Подписи',data:labelData()}]})});
+function go(v){chart.setOption({geo:{center:v.center,zoom:v.zoom}})}
+document.getElementById('b1').onclick=function(){go(V.all)};
+document.getElementById('b2').onclick=function(){go(V.mid)};
+document.getElementById('b3').onclick=function(){go(V.msk)};
+window.addEventListener('resize',function(){chart.resize()});
+</script>
+</body>
+</html>
